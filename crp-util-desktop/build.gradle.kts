@@ -21,16 +21,21 @@ dependencies {
 }
 
 tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "11"
+    kotlinOptions.jvmTarget = "15"
 }
 
 compose.desktop {
     application {
-        mainClass = "MainKt"
+        mainClass = "com.x256n.desktop.crputil.MainKt"
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "crp-util-desktop"
             packageVersion = "1.0.0"
+
+            windows {
+                shortcut = true
+                iconFile.set(project.file("icon.ico"))
+            }
         }
     }
 }
