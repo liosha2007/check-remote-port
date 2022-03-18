@@ -162,6 +162,7 @@ fun App() {
                         )
                         Spacer(modifier = Modifier.size(4.dp))
                         TextField(
+                            enabled = !readOnly,
                             value = timeout.toString(),
                             readOnly = readOnly,
                             maxLines = 1,
@@ -174,15 +175,19 @@ fun App() {
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Checkbox(checked = showTcpFormat, onCheckedChange = {
-                            showTcpFormat = !showTcpFormat
-                        })
+                        Checkbox(
+                            enabled = !readOnly,
+                            checked = showTcpFormat, onCheckedChange = {
+                                showTcpFormat = !showTcpFormat
+                            })
                         Button(
                             onClick = {
                                 scope.launch(Dispatchers.IO) {
                                     analizer.analize(source, timeout, showTcpFormat)
                                 }
-                            }) {
+                            },
+                            enabled = !readOnly
+                        ) {
                             Text("Запустити перевірку!")
                         }
                     }
