@@ -28,9 +28,7 @@ import kotlinx.coroutines.launch
 @Composable
 @Preview
 fun App() {
-    var source by remember { mutableStateOf("any text 100.100.100.100:8080 any text/443 100.100.100.100:80, 8080 100.100.100.102:99 85/23\n" +
-            "(100.100.100.101) any text/23/one more port 24\n" +
-            "..100.100.100.100.8080 12.") }
+    var source by remember { mutableStateOf("") }
     var result by remember { mutableStateOf<MutableList<LogMessage>>(mutableListOf()) }
     var timeout by remember { mutableStateOf(3000) }
     var progress by remember { mutableStateOf(0f) }
