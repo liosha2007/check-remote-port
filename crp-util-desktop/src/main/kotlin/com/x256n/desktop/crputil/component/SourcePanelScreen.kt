@@ -21,7 +21,6 @@ fun SourcePanelScreen(modifier: Modifier = Modifier, state: MainState, onValueCh
             modifier = Modifier.fillMaxWidth()
                 .weight(1f),
             value = state.source,
-            readOnly = state.isInProgress,
             onValueChange = onValueChange,
             label = { Text("Вхідні дані (у яких є IP адреса та порти до неї)") },
             textStyle = MaterialTheme.typography.caption.copy(

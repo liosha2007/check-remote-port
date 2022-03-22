@@ -14,44 +14,6 @@ import com.x256n.desktop.crputil.MainState
 
 @Composable
 fun BottomPanelScreen(modifier: Modifier = Modifier, state: MainState, onTimeoutChange: (String) -> Unit, onAnalizeClick: () -> Unit) {
-//    isInProgress: MutableState<Boolean>,
-//    source: MutableState<String>,
-//    progress: MutableState<Float>,
-//    modifier: Modifier = Modifier,
-//    console: MutableState<MutableList<LogMessage>>,
-
-//    val timeout = remember { mutableStateOf(3000) }
-//    val showTcpFormat = remember { mutableStateOf(false) }
-//    val scope = rememberCoroutineScope()
-
-//    val logger = remember {
-//        ScreenLogger(
-//            onLogError = {
-//                console.value = console.value.toMutableList().apply { add(LogMessage.ErrorMessage(it)) }
-//            },
-//            onLogWarn = {
-//                console.value = console.value.toMutableList().apply { add(LogMessage.WarningMessage(it)) }
-//            },
-//            onLogInfo = {
-//                console.value = console.value.toMutableList().apply { add(LogMessage.InfoMessage(it)) }
-//            },
-//            onLogSuccess = {
-//                console.value = console.value.toMutableList().apply { add(LogMessage.SuccessMessage(it)) }
-//            },
-//            onClear = {
-//                console.value = mutableListOf()
-//            },
-//        )
-//    }
-//    val analizer = remember {
-//        InputAnalizer(
-//            logger = logger,
-//            onStart = { isInProgress.value = true },
-//            onProgress = { progress.value = it },
-//            onFinish = { isInProgress.value = false }
-//        )
-//    }
-
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.SpaceBetween
@@ -65,7 +27,8 @@ fun BottomPanelScreen(modifier: Modifier = Modifier, state: MainState, onTimeout
                 Spacer(modifier = Modifier.size(4.dp))
                 TextField(
                     modifier = Modifier
-                        .height(50.dp),
+                        .width(120.dp)
+                        .padding(bottom = 4.dp),
                     value = state.timeout.toString(),
                     maxLines = 1,
                     onValueChange = onTimeoutChange,

@@ -17,6 +17,7 @@ class MainViewModel {
     val logger = ScreenLogger(
         onLogError = {
             _state.value = _state.value.copy(
+                status = it,
                 logs = _state.value.logs.apply { add(LogMessage.ErrorMessage(it)) }
             )
         },
@@ -49,16 +50,22 @@ class MainViewModel {
                 when (item) {
                     is DisplayResultItem.AnswerUp -> {
                         if (item.ip == ip) {
-                            item.copy(
-                                host = resolveHost(item.ip)
-                            )
+                            val host = resolveHost(item.ip)
+                            if (host == null) {
+                                item.copy(host = "-")
+                            } else {
+                                item.copy(host = host)
+                            }
                         } else item
                     }
                     is DisplayResultItem.AnswerDown -> {
                         if (item.ip == ip) {
-                            item.copy(
-                                host = resolveHost(item.ip)
-                            )
+                            val host = resolveHost(item.ip)
+                            if (host == null) {
+                                item.copy(host = "-")
+                            } else {
+                                item.copy(host = host)
+                            }
                         } else item
                     }
                     else -> {
@@ -74,7 +81,7 @@ class MainViewModel {
         }
     }
 
-    private fun resolveHost(ip: String): String =
+    private fun resolveHost(ip: String): String? =
         try {
             val addr = InetAddress.getByName(ip)
             if (ip == addr.hostName) {
@@ -83,7 +90,7 @@ class MainViewModel {
                 addr.hostName
             }
         } catch (e: Exception) {
-            "Unknown"
+            null
         }
 
 
@@ -100,15 +107,16 @@ class MainViewModel {
         )
         if (state.value.source.isBlank()) {
             _state.value = _state.value.copy(
-                logs = mutableListOf(LogMessage.WarningMessage("Немає вхідних данних!"))
+                status = "Немає вхідних данних!"
             )
+            return
         }
         val pinger = PortPinger(
             logger = logger,
             onStart = {
                 withContext(Dispatchers.Main) {
                     _state.value = _state.value.copy(
-                        isInProgress = true
+                        mode = ScreenMode.PROGRESS
                     )
                 }
             },
@@ -123,7 +131,7 @@ class MainViewModel {
                 delay(500)
                 withContext(Dispatchers.Main) {
                     _state.value = _state.value.copy(
-                        isInProgress = false
+                        mode = ScreenMode.MAIN
                     )
                 }
             }
@@ -134,7 +142,8 @@ class MainViewModel {
                 withContext(Dispatchers.Main) {
                     _state.value = _state.value.copy(
                         result = result,
-                        activePanel = ActivePanel.RESULT
+                        activePanel = ActivePanel.RESULT,
+                        status = "Натисніть на ip або порт щоб скопіювати їх. Натисніть на зображення меню (біля IP) щоб скопіювати всі дані"
                     )
                 }
             }
@@ -156,7 +165,145 @@ class MainViewModel {
     }
 
     fun onCopyToClipboard(value: String) {
+        copyToClipboard(value)
+    }
+
+    fun onCopyGreen() {
+        val content = state.value.result
+            .filterIsInstance<DisplayResultItem.AnswerUp>()
+            .map { it.ip }
+            .joinToString(" ")
+        copyToClipboard(content)
+    }
+
+    fun onCopyGreenWithPorts() {
+        val content = state.value.result
+            .filterIsInstance<DisplayResultItem.AnswerUp>()
+            .map { "${it.ip}:${it.port}" }
+            .joinToString(" ")
+        copyToClipboard(content)
+    }
+
+    fun onCopyGreenCustom() {
+        _state.value = _state.value.copy(
+            mode = ScreenMode.CUSTOM_GREEN
+        )
+        fomatCustom()
+    }
+
+    fun onCopyYellow() {
+        val content = state.value.result
+            .filterIsInstance<DisplayResultItem.AnswerDown>()
+            .map { it.ip }
+            .joinToString(" ")
+        copyToClipboard(content)
+    }
+
+    fun onCopyYellowWithPorts() {
+        val content = state.value.result
+            .filterIsInstance<DisplayResultItem.AnswerDown>()
+            .map { "${it.ip}:${it.port}" }
+            .joinToString(" ")
+        copyToClipboard(content)
+    }
+
+    fun onCopyYellowCustom() {
+        _state.value = _state.value.copy(
+            mode = ScreenMode.CUSTOM_YELLOW
+        )
+        fomatCustom()
+    }
+
+    fun onCopyAll() {
+        val content = state.value.result
+            .filter { it is DisplayResultItem.AnswerUp || it is DisplayResultItem.AnswerDown }
+            .map {
+                if (it is DisplayResultItem.AnswerUp) it.ip
+                else if (it is DisplayResultItem.AnswerDown) it.ip
+                else ""
+            }
+            .joinToString(" ")
+        copyToClipboard(content)
+    }
+
+    fun onCopyAllWithPorts() {
+        val content = state.value.result
+            .map {
+                if (it is DisplayResultItem.AnswerUp) "${it.ip}:${it.port}"
+                else if (it is DisplayResultItem.AnswerDown) "${it.ip}:${it.port}"
+                else ""
+            }
+            .joinToString(" ")
+        copyToClipboard(content)
+    }
+
+    fun onCopyAllCustom() {
+        _state.value = _state.value.copy(
+            mode = ScreenMode.CUSTOM_ALL
+        )
+        fomatCustom()
+    }
+
+    private fun copyToClipboard(value: String) {
         Toolkit.getDefaultToolkit().systemClipboard
             .setContents(StringSelection(value), null)
+    }
+
+    fun onTemplateChange(template: String) {
+        _state.value = _state.value.copy(
+            customTemplate = template
+        )
+        fomatCustom()
+    }
+
+    fun fomatCustom() {
+        val template = state.value.customTemplate
+        val customValue = when (state.value.mode) {
+            ScreenMode.CUSTOM_GREEN -> {
+                state.value.result.filterIsInstance<DisplayResultItem.AnswerUp>()
+                    .map { formatWithTemplate(it.ip, it.port, template) }.joinToString("")
+            }
+            ScreenMode.CUSTOM_YELLOW -> {
+                state.value.result.filterIsInstance<DisplayResultItem.AnswerDown>()
+                    .map { formatWithTemplate(it.ip, it.port, template) }.joinToString("")
+            }
+            ScreenMode.CUSTOM_ALL -> {
+                state.value.result.filter { it is DisplayResultItem.AnswerUp || it is DisplayResultItem.AnswerDown }
+                    .joinToString("") {
+                        when (it) {
+                            is DisplayResultItem.AnswerUp -> {
+                                formatWithTemplate(it.ip, it.port, template)
+                            }
+                            is DisplayResultItem.AnswerDown -> {
+                                formatWithTemplate(it.ip, it.port, template)
+                            }
+                            else -> {
+                                ""
+                            }
+                        }
+                    }
+            }
+            else -> {
+                _state.value = _state.value.copy(
+                    status = "Невідомий режим"
+                )
+                ""
+            }
+        }
+        _state.value = _state.value.copy(
+            customTemplate = template,
+            customValue = customValue
+        )
+    }
+
+    private fun formatWithTemplate(ip: String, port: Int, template: String) =
+        template
+            .replace("#IP", ip)
+            .replace("#PORT", port.toString())
+
+    fun onCancelCustom() {
+        _state.value = _state.value.copy(
+            mode = ScreenMode.MAIN
+        )
     }
 }

@@ -41,6 +41,11 @@ class PortPinger(
         }
         // Remove duplicates
         hosts.addAll(hostsWithDublicates.toSet().toMutableList())
+        if (hosts.isEmpty()) {
+            logger.error("IP адреси не знайдені")
+            onFinish()
+            return null
+        }
 
         logger.clear()
         onProgress(1f / hosts.size)
