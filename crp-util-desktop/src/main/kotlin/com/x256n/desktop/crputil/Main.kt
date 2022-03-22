@@ -59,7 +59,7 @@ fun App() {
         ) {
             Row(modifier = Modifier.fillMaxWidth().weight(1f)) {
                 StartPanelScreen(
-                    modifier = if (activeStart) Modifier.weight(1f) else Modifier.width(250.dp),
+                    modifier = if (activeStart) Modifier.weight(1f) else Modifier.width(275.dp),
                     source, activeStart, readOnly, progress
                 )
                 Spacer(
@@ -72,7 +72,7 @@ fun App() {
                 EndPanelScreen(
                     result,
                     !activeStart,
-                    modifier = (if (activeStart) Modifier.width(250.dp) else Modifier.weight(1f))
+                    modifier = (if (activeStart) Modifier.width(275.dp) else Modifier.weight(1f))
                 )
             }
             BottomPanelScreen(

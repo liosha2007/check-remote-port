@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.x256n.desktop.crputil.InputAnalizer
+import com.x256n.desktop.crputil.common.isDigit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -38,12 +39,13 @@ fun BottomPanelScreen(
                     text = "Таймаут (мс)"
                 )
                 Spacer(modifier = Modifier.size(4.dp))
-                TextField(
+                TextField(modifier = Modifier
+                    .height(50.dp),
                     enabled = !readOnly,
                     value = timeout.value.toString(),
                     readOnly = readOnly,
                     maxLines = 1,
-                    onValueChange = { timeout.value = if (it.isEmpty()) 0 else it.toInt() },
+                    onValueChange = { timeout.value = if (it.isEmpty()) 0 else if (it.isDigit()) it.toInt() else timeout.value },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                 )
             }

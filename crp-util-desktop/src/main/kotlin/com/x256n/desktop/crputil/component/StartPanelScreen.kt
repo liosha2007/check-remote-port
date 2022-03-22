@@ -10,6 +10,8 @@ import androidx.compose.material.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -24,7 +26,9 @@ fun StartPanelScreen(modifier: Modifier = Modifier, source: MutableState<String>
             onValueChange = { source.value = it },
             label = { Text("Вхідні дані (у яких є IP адреса та порти до неї)") },
             textStyle = MaterialTheme.typography.caption.copy(
-                fontSize = if (isActive) 16.sp else 10.sp
+                fontSize = if (isActive) 16.sp else 10.sp,
+                fontFamily = FontFamily.Monospace,
+                fontWeight = if (isActive) FontWeight.W500 else FontWeight.W700
             )
         )
         LinearProgressIndicator(
