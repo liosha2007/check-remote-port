@@ -1,5 +1,6 @@
 package com.x256n.desktop.crputil
 
+import com.x256n.desktop.crputil.model.Host
 import java.io.IOException
 import java.net.InetSocketAddress
 import java.net.Socket
@@ -7,21 +8,17 @@ import java.net.SocketAddress
 import java.net.UnknownHostException
 import java.util.regex.Pattern
 
-class InputAnalizer(
+class PortPinger(
     val logger: ScreenLogger,
-    val onStart: () -> Unit,
-    val onProgress: (progress: Float) -> Unit,
-    val onFinish: () -> Unit,
+    val onStart: suspend () -> Unit,
+    val onProgress: suspend (progress: Float) -> Unit,
+    val onFinish: suspend () -> Unit,
 ) {
-    fun analize(
-        source: String,
-        timeout: Int,
-        showTcpFormat: Boolean
-    ) {
+    suspend fun analize(source: String, timeout: Int): List<DisplayResultItem>? {
         if (timeout < 5) {
             logger.clear()
             logger.error("Таймаут має бути не менше 5 мс")
-            return
+            return null
         }
 
         val hosts = mutableListOf<Host>()
@@ -30,7 +27,7 @@ class InputAnalizer(
         if (inputLines.isEmpty()) {
             logger.clear()
             logger.error("Введіть вхідні дані")
-            return
+            return null
         }
 
         onStart()
@@ -67,35 +64,23 @@ class InputAnalizer(
             logger.newLine()
         }
 
-        logger.newLine()
-        logger.info("-------------\nРезультати:\n")
-        logger.info("${pingedHosts.filter { timeout > it.timeout }.size}/${pingedHosts.size} хостів живі\n")
-        logger.newLine()
-
-        if (showTcpFormat) {
-            logger.info(pingedHosts.filter { it.timeout < timeout }.joinToString(" ") { host ->
-                "tcp://${host.host.correct}"
-            })
-
-            logger.newLine()
-            logger.newLine()
-        }
-
-        pingedHosts.sortedBy { it.timeout }.forEach { host ->
-            logger.info(host.host.printable)
+        val result: List<DisplayResultItem> = pingedHosts.sortedBy { it.time }.map { host ->
             if (host.isNotAnswered) {
-                val printableTimeout = if (timeout % 1000 == 0) {
-                    "${timeout / 1000}sec"
-                } else {
-                    "${timeout}ms"
-                }
-                logger.info("n/a (>${printableTimeout})")
+                DisplayResultItem.AnswerDown(
+                    ip = host.host.host,
+                    port = host.host.port,
+                    timeout = timeout
+                )
             } else {
-                logger.info("${host.timeout}ms")
+                DisplayResultItem.AnswerUp(
+                    ip = host.host.host,
+                    port = host.host.port,
+                    time = host.time
+                )
             }
-            logger.newLine()
         }
         onFinish()
+        return result
     }
 
     private fun parseHostList(input: String, forEach: (ip: String, port: Int) -> Unit) {
@@ -120,7 +105,7 @@ class InputAnalizer(
         }
     }
 
-    data class PingedHost(val host: Host, val timeout: Int, val isNotAnswered: Boolean)
+    data class PingedHost(val host: Host, val time: Int, val isNotAnswered: Boolean)
 
     private fun pingHost(host: Host, timeout: Int, logger: ScreenLogger): Int {
         var socket: Socket? = null
