@@ -11,7 +11,7 @@ Desktop project written with Java to check is remote port available
 ![main screen](crp-util-screens/crp-util-options.png)
 
 ## Custom format
-![main screen](crp-util-screens/crp-util-custom format.png)
+![main screen](crp-util-screens/crp-util-custom-format.png)
 
 Download [link](https://github.com/liosha2007/crp-util/releases/)
 

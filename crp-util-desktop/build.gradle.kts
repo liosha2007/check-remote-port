@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "com.x256n.desktop.crputil"
-version = "1.0"
+version = "1.0.2"
 
 repositories {
     google()
@@ -30,7 +30,7 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "crp-util-desktop"
-            packageVersion = "1.0.1"
+            packageVersion = "1.0.2"
 
             windows {
                 shortcut = true
